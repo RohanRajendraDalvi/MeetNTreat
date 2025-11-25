@@ -10,11 +10,14 @@ import FirebaseAuth
 import FirebaseFirestore
 import FirebaseStorage
 
-class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UITableViewDataSource {
     
     var profileView = ProfileView()
     let db = Firestore.firestore()
     let storage = Storage.storage()
+    
+    // Data for table view
+    let myPetsData = ["My Pets"]
     
     override func loadView() {
         view = profileView
@@ -23,12 +26,22 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     override func viewDidLoad() {
         super.viewDidLoad()
         setupActions()
+        setupTableView()
         loadUserData()
+        
+        // Debug: Check navigation controller
+        print("Navigation controller: \(String(describing: navigationController))")
     }
     
     private func setupActions() {
         profileView.changePhotoButton.addTarget(self, action: #selector(changePhotoTapped), for: .touchUpInside)
         profileView.logoutButton.addTarget(self, action: #selector(logoutTapped), for: .touchUpInside)
+    }
+    
+    private func setupTableView() {
+        profileView.tableView.dataSource = self
+        profileView.tableView.delegate = self
+        profileView.tableView.isScrollEnabled = false // Since we only have one row
     }
     
     private func loadUserData() {
@@ -100,6 +113,43 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
             dismiss(animated: true)
         } catch {
             print("Error logging out:", error)
+        }
+    }
+    
+    // MARK: - UITableViewDataSource
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return myPetsData.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
+        cell.textLabel?.text = myPetsData[indexPath.row]
+        cell.accessoryType = .disclosureIndicator // Add arrow on the right
+        cell.selectionStyle = .default
+        return cell
+    }
+}
+
+// MARK: - UITableViewDelegate
+extension ProfileViewController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        print("My Pets tapped - Navigating to MyPetsViewController")
+        
+        if indexPath.row == 0 { // "My Pets" row
+            let myPetsVC = MyPetsViewController()
+            
+            // Check if we have a navigation controller
+            if let navController = self.navigationController {
+                print("Using navigation controller push")
+                navController.pushViewController(myPetsVC, animated: true)
+            } else {
+                print("No navigation controller found - presenting modally")
+                // If no navigation controller, present modally with navigation
+                let navController = UINavigationController(rootViewController: myPetsVC)
+                navController.modalPresentationStyle = .fullScreen
+                self.present(navController, animated: true, completion: nil)
+            }
         }
     }
 }

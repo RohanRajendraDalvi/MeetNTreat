@@ -13,6 +13,7 @@ class ProfileView: UIView {
     var changePhotoButton: UIButton!
     var nameLabel: UILabel!
     var emailLabel: UILabel!
+    var tableView: UITableView!
     var logoutButton: UIButton!
     
     override init(frame: CGRect) {
@@ -62,6 +63,15 @@ class ProfileView: UIView {
         emailLabel.translatesAutoresizingMaskIntoConstraints = false
         self.addSubview(emailLabel)
         
+        // Table View
+        tableView = UITableView()
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
+        tableView.layer.cornerRadius = 10
+        tableView.layer.borderWidth = 1
+        tableView.layer.borderColor = UIColor.systemGray4.cgColor
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        self.addSubview(tableView)
+        
         // Logout Button
         logoutButton = UIButton(type: .system)
         logoutButton.setTitle("Logout", for: .normal)
@@ -96,8 +106,14 @@ class ProfileView: UIView {
             emailLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 20),
             emailLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -20),
             
-            // Logout Button
-            logoutButton.topAnchor.constraint(equalTo: emailLabel.bottomAnchor, constant: 40),
+            // Table View - ADDED ABOVE LOGOUT BUTTON
+            tableView.topAnchor.constraint(equalTo: emailLabel.bottomAnchor, constant: 30),
+            tableView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 20),
+            tableView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -20),
+            tableView.heightAnchor.constraint(equalToConstant: 60), // Height for one row
+            
+            // Logout Button - NOW BELOW TABLE VIEW
+            logoutButton.topAnchor.constraint(equalTo: tableView.bottomAnchor, constant: 30),
             logoutButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 32),
             logoutButton.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -32),
             logoutButton.heightAnchor.constraint(equalToConstant: 50)

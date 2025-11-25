@@ -13,33 +13,24 @@ class ListingCreationView: UIView {
     var scrollView: UIScrollView!
     var contentView: UIView!
     
-    var labelTitle: UILabel!
+    // Pet Selection Section
+    var labelPetSelectionTitle: UILabel!
+    var petDropdownButton: UIButton!
+    var petDropdownTableView: UITableView!
+    var isDropdownExpanded = false
     
-    var labelNameTitle: UILabel!
-    var textFieldName: UITextField!
-    
-    var labelDescriptionTitle: UILabel!
-    var textViewDescription: UITextView!
-    
+    // Price Section
     var labelPricingTitle: UILabel!
     var textFieldPricing: UITextField!
     
+    // Availability Calendar Section
     var labelCalendarTitle: UILabel!
     var calendarView: UIDatePicker!
     
+    // Time Intervals Section
     var labelTimeIntervalsTitle: UILabel!
     var timeIntervalStackView: UIStackView!
     var timeIntervalButtons: [UIButton] = []
-    var selectedTimeIntervals: [String] = []
-    
-    var labelLocationTitle: UILabel!
-    var textFieldLocation: UITextField!
-    var buttonCalibrate: UIButton!
-    var mapView: MKMapView!
-    
-    var labelImageTitle: UILabel!
-    var imageViewPet: UIImageView!
-    var buttonSelectImage: UIButton!
     
     var buttonSubmit: UIButton!
     
@@ -49,13 +40,10 @@ class ListingCreationView: UIView {
         self.backgroundColor = .white
         
         setupScrollView()
-        setupNameSection()
-        setupDescriptionSection()
+        setupPetSelectionSection()
         setupPricingSection()
         setupCalendarSection()
         setupTimeIntervalsSection()
-        setupLocationSection()
-        setupImageSection()
         setupButtonSubmit()
         
         initConstraints()
@@ -71,48 +59,57 @@ class ListingCreationView: UIView {
         scrollView.addSubview(contentView)
     }
     
-    
-    func setupNameSection(){
-        labelNameTitle = UILabel()
-        labelNameTitle.text = "Pet Name:"
-        labelNameTitle.font = UIFont.boldSystemFont(ofSize: 16)
-        labelNameTitle.translatesAutoresizingMaskIntoConstraints = false
-        contentView.addSubview(labelNameTitle)
+    func setupPetSelectionSection() {
+        labelPetSelectionTitle = UILabel()
+        labelPetSelectionTitle.text = "Select Pet:"
+        labelPetSelectionTitle.font = UIFont.boldSystemFont(ofSize: 16)
+        labelPetSelectionTitle.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(labelPetSelectionTitle)
         
-        textFieldName = UITextField()
-        textFieldName.placeholder = "Enter pet name"
-        textFieldName.borderStyle = .roundedRect
-        textFieldName.translatesAutoresizingMaskIntoConstraints = false
-        contentView.addSubview(textFieldName)
-    }
-    
-    func setupDescriptionSection(){
-        labelDescriptionTitle = UILabel()
-        labelDescriptionTitle.text = "Pet Description:"
-        labelDescriptionTitle.font = UIFont.boldSystemFont(ofSize: 16)
-        labelDescriptionTitle.translatesAutoresizingMaskIntoConstraints = false
-        contentView.addSubview(labelDescriptionTitle)
+        petDropdownButton = UIButton(type: .system)
+        petDropdownButton.setTitle("Select a pet", for: .normal)
+        petDropdownButton.titleLabel?.font = UIFont.systemFont(ofSize: 16)
+        petDropdownButton.backgroundColor = .systemGray6
+        petDropdownButton.setTitleColor(.systemBlue, for: .normal)
+        petDropdownButton.layer.cornerRadius = 8
+        petDropdownButton.layer.borderWidth = 1
+        petDropdownButton.layer.borderColor = UIColor.systemGray4.cgColor
+        petDropdownButton.contentHorizontalAlignment = .left
+        petDropdownButton.titleEdgeInsets = UIEdgeInsets(top: 0, left: 12, bottom: 0, right: 0)
+        petDropdownButton.translatesAutoresizingMaskIntoConstraints = false
         
-        textViewDescription = UITextView()
-        textViewDescription.text = "Enter pet description (breed, age, temperament, etc.)"
-        textViewDescription.font = UIFont.systemFont(ofSize: 16)
-        textViewDescription.layer.borderWidth = 1.0
-        textViewDescription.layer.borderColor = UIColor.systemGray4.cgColor
-        textViewDescription.layer.cornerRadius = 8
-        textViewDescription.textColor = .lightGray
-        textViewDescription.translatesAutoresizingMaskIntoConstraints = false
-        contentView.addSubview(textViewDescription)
+        // Add dropdown arrow
+        let dropdownArrow = UIImageView(image: UIImage(systemName: "chevron.down"))
+        dropdownArrow.tintColor = .systemGray
+        dropdownArrow.translatesAutoresizingMaskIntoConstraints = false
+        petDropdownButton.addSubview(dropdownArrow)
+        
+        NSLayoutConstraint.activate([
+            dropdownArrow.trailingAnchor.constraint(equalTo: petDropdownButton.trailingAnchor, constant: -12),
+            dropdownArrow.centerYAnchor.constraint(equalTo: petDropdownButton.centerYAnchor)
+        ])
+        
+        contentView.addSubview(petDropdownButton)
+        
+        petDropdownTableView = UITableView()
+        petDropdownTableView.isHidden = true
+        petDropdownTableView.layer.cornerRadius = 8
+        petDropdownTableView.layer.borderWidth = 1
+        petDropdownTableView.layer.borderColor = UIColor.systemGray4.cgColor
+        petDropdownTableView.register(UITableViewCell.self, forCellReuseIdentifier: "petCell")
+        petDropdownTableView.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(petDropdownTableView)
     }
     
     func setupPricingSection(){
         labelPricingTitle = UILabel()
-        labelPricingTitle.text = "Pricing:"
+        labelPricingTitle.text = "Price:"
         labelPricingTitle.font = UIFont.boldSystemFont(ofSize: 16)
         labelPricingTitle.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(labelPricingTitle)
         
         textFieldPricing = UITextField()
-        textFieldPricing.placeholder = "Enter price (e.g., $100, Free)"
+        textFieldPricing.placeholder = "Enter price (e.g., $100)"
         textFieldPricing.borderStyle = .roundedRect
         textFieldPricing.keyboardType = .numbersAndPunctuation
         textFieldPricing.translatesAutoresizingMaskIntoConstraints = false
@@ -169,77 +166,9 @@ class ListingCreationView: UIView {
         }
     }
     
-    func setupLocationSection(){
-        labelLocationTitle = UILabel()
-        labelLocationTitle.text = "Location:"
-        labelLocationTitle.font = UIFont.boldSystemFont(ofSize: 16)
-        labelLocationTitle.translatesAutoresizingMaskIntoConstraints = false
-        contentView.addSubview(labelLocationTitle)
-        
-        textFieldLocation = UITextField()
-        textFieldLocation.placeholder = "Enter location/address"
-        textFieldLocation.borderStyle = .roundedRect
-        textFieldLocation.translatesAutoresizingMaskIntoConstraints = false
-        contentView.addSubview(textFieldLocation)
-        
-        buttonCalibrate = UIButton(type: .system)
-        buttonCalibrate.setTitle("Calibrate Location", for: .normal)
-        buttonCalibrate.titleLabel?.font = UIFont.systemFont(ofSize: 16)
-        buttonCalibrate.backgroundColor = .systemBlue
-        buttonCalibrate.setTitleColor(.white, for: .normal)
-        buttonCalibrate.layer.cornerRadius = 8
-        buttonCalibrate.translatesAutoresizingMaskIntoConstraints = false
-        contentView.addSubview(buttonCalibrate)
-        
-        mapView = MKMapView()
-        mapView.layer.cornerRadius = 8
-        mapView.layer.borderWidth = 1.0
-        mapView.layer.borderColor = UIColor.systemGray4.cgColor
-        mapView.translatesAutoresizingMaskIntoConstraints = false
-        contentView.addSubview(mapView)
-        
-        setupWorldMapView()
-    }
-    
-    func setupWorldMapView() {
-        let center = CLLocationCoordinate2D(latitude: 20, longitude: 0)
-        let span = MKCoordinateSpan(latitudeDelta: 100, longitudeDelta: 100) // Valid world view
-        let region = MKCoordinateRegion(center: center, span: span)
-        mapView.setRegion(region, animated: false)
-    }
-    
-    func setupImageSection(){
-        labelImageTitle = UILabel()
-        labelImageTitle.text = "Pet Photo:"
-        labelImageTitle.font = UIFont.boldSystemFont(ofSize: 16)
-        labelImageTitle.translatesAutoresizingMaskIntoConstraints = false
-        contentView.addSubview(labelImageTitle)
-        
-        imageViewPet = UIImageView()
-        imageViewPet.image = UIImage(systemName: "photo")
-        imageViewPet.contentMode = .scaleAspectFill
-        imageViewPet.clipsToBounds = true
-        imageViewPet.layer.cornerRadius = 12 // Square with rounded corners
-        imageViewPet.layer.borderWidth = 2
-        imageViewPet.layer.borderColor = UIColor.systemGray4.cgColor
-        imageViewPet.backgroundColor = .systemGray6
-        imageViewPet.tintColor = .systemGray3
-        imageViewPet.translatesAutoresizingMaskIntoConstraints = false
-        contentView.addSubview(imageViewPet)
-        
-        buttonSelectImage = UIButton(type: .system)
-        buttonSelectImage.setTitle("Select Photo", for: .normal)
-        buttonSelectImage.titleLabel?.font = UIFont.systemFont(ofSize: 16)
-        buttonSelectImage.backgroundColor = .systemOrange
-        buttonSelectImage.setTitleColor(.white, for: .normal)
-        buttonSelectImage.layer.cornerRadius = 8
-        buttonSelectImage.translatesAutoresizingMaskIntoConstraints = false
-        contentView.addSubview(buttonSelectImage)
-    }
-    
     func setupButtonSubmit(){
         buttonSubmit = UIButton(type: .system)
-        buttonSubmit.setTitle("Create Pet Listing", for: .normal)
+        buttonSubmit.setTitle("Create Listing", for: .normal)
         buttonSubmit.titleLabel?.font = UIFont.boldSystemFont(ofSize: 18)
         buttonSubmit.backgroundColor = .systemGreen
         buttonSubmit.setTitleColor(.white, for: .normal)
@@ -262,29 +191,24 @@ class ListingCreationView: UIView {
             contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
             contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
             contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
-                    
-            // Name section constraints - NOW STARTING FROM CONTENT VIEW TOP
-            labelNameTitle.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 16),
-            labelNameTitle.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 32),
-            labelNameTitle.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -32),
             
-            textFieldName.topAnchor.constraint(equalTo: labelNameTitle.bottomAnchor, constant: 8),
-            textFieldName.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 32),
-            textFieldName.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -32),
-            textFieldName.heightAnchor.constraint(equalToConstant: 44),
+            // Pet Selection section constraints
+            labelPetSelectionTitle.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 16),
+            labelPetSelectionTitle.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 32),
+            labelPetSelectionTitle.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -32),
             
-            // Description section constraints
-            labelDescriptionTitle.topAnchor.constraint(equalTo: textFieldName.bottomAnchor, constant: 16),
-            labelDescriptionTitle.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 32),
-            labelDescriptionTitle.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -32),
+            petDropdownButton.topAnchor.constraint(equalTo: labelPetSelectionTitle.bottomAnchor, constant: 8),
+            petDropdownButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 32),
+            petDropdownButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -32),
+            petDropdownButton.heightAnchor.constraint(equalToConstant: 44),
             
-            textViewDescription.topAnchor.constraint(equalTo: labelDescriptionTitle.bottomAnchor, constant: 8),
-            textViewDescription.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 32),
-            textViewDescription.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -32),
-            textViewDescription.heightAnchor.constraint(equalToConstant: 120),
+            petDropdownTableView.topAnchor.constraint(equalTo: petDropdownButton.bottomAnchor, constant: 4),
+            petDropdownTableView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 32),
+            petDropdownTableView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -32),
+            petDropdownTableView.heightAnchor.constraint(equalToConstant: 150),
             
             // Pricing section constraints
-            labelPricingTitle.topAnchor.constraint(equalTo: textViewDescription.bottomAnchor, constant: 16),
+            labelPricingTitle.topAnchor.constraint(equalTo: petDropdownButton.bottomAnchor, constant: 24),
             labelPricingTitle.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 32),
             labelPricingTitle.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -32),
             
@@ -294,7 +218,7 @@ class ListingCreationView: UIView {
             textFieldPricing.heightAnchor.constraint(equalToConstant: 44),
             
             // Calendar section constraints
-            labelCalendarTitle.topAnchor.constraint(equalTo: textFieldPricing.bottomAnchor, constant: 16),
+            labelCalendarTitle.topAnchor.constraint(equalTo: textFieldPricing.bottomAnchor, constant: 24),
             labelCalendarTitle.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 32),
             labelCalendarTitle.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -32),
             
@@ -312,45 +236,8 @@ class ListingCreationView: UIView {
             timeIntervalStackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -32),
             timeIntervalStackView.heightAnchor.constraint(equalToConstant: 360), // 8 buttons * 44 height + 8*7 spacing
             
-            // Location section constraints
-            labelLocationTitle.topAnchor.constraint(equalTo: timeIntervalStackView.bottomAnchor, constant: 16),
-            labelLocationTitle.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 32),
-            labelLocationTitle.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -32),
-            
-            textFieldLocation.topAnchor.constraint(equalTo: labelLocationTitle.bottomAnchor, constant: 8),
-            textFieldLocation.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 32),
-            textFieldLocation.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -32),
-            textFieldLocation.heightAnchor.constraint(equalToConstant: 44),
-            
-            // Calibrate button constraints
-            buttonCalibrate.topAnchor.constraint(equalTo: textFieldLocation.bottomAnchor, constant: 16),
-            buttonCalibrate.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 32),
-            buttonCalibrate.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -32),
-            buttonCalibrate.heightAnchor.constraint(equalToConstant: 44),
-            
-            // Map view constraints - ALWAYS VISIBLE
-            mapView.topAnchor.constraint(equalTo: buttonCalibrate.bottomAnchor, constant: 16),
-            mapView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 32),
-            mapView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -32),
-            mapView.heightAnchor.constraint(equalToConstant: 200),
-            
-            // Image section constraints
-            labelImageTitle.topAnchor.constraint(equalTo: mapView.bottomAnchor, constant: 24),
-            labelImageTitle.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 32),
-            labelImageTitle.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -32),
-            
-            imageViewPet.topAnchor.constraint(equalTo: labelImageTitle.bottomAnchor, constant: 16),
-            imageViewPet.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
-            imageViewPet.widthAnchor.constraint(equalToConstant: 150),
-            imageViewPet.heightAnchor.constraint(equalToConstant: 150), // Square image
-            
-            buttonSelectImage.topAnchor.constraint(equalTo: imageViewPet.bottomAnchor, constant: 16),
-            buttonSelectImage.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
-            buttonSelectImage.widthAnchor.constraint(equalToConstant: 150),
-            buttonSelectImage.heightAnchor.constraint(equalToConstant: 44),
-            
             // Submit button constraints
-            buttonSubmit.topAnchor.constraint(equalTo: buttonSelectImage.bottomAnchor, constant: 32),
+            buttonSubmit.topAnchor.constraint(equalTo: timeIntervalStackView.bottomAnchor, constant: 32),
             buttonSubmit.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
             buttonSubmit.widthAnchor.constraint(equalToConstant: 200),
             buttonSubmit.heightAnchor.constraint(equalToConstant: 50),
